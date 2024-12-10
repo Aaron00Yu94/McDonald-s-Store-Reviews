@@ -5,18 +5,24 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-# Load necessary libraries
-library(ggplot2)
-library(dplyr)
-library(patchwork)
-library(scales)
-library(viridis)
-library(maps)
-library(sf)
-library(tidytext)
-library(tidyr)
-library(stringr)
+# List of required packages
+required_packages <- c(
+  "ggplot2", "dplyr", "patchwork", "scales", "viridis", 
+  "maps", "sf", "tidytext", "tidyr", "stringr"
+)
 
+# Function to check and install missing packages
+install_if_missing <- function(packages) {
+  for (pkg in packages) {
+    if (!requireNamespace(pkg, quietly = TRUE)) {
+      install.packages(pkg, dependencies = TRUE)
+    }
+  }
+}
+
+# Install and load required packages
+install_if_missing(required_packages)
+lapply(required_packages, library, character.only = TRUE)
 
 # Set global chunk options
 knitr::opts_chunk$set(
@@ -113,60 +119,44 @@ output: html_document
 ## Discussion of Visualizations
 
 ### **1. What is the essential question that your visualization is supposed to inform?**
-The visualization is designed to answer the following essential questions:
-1. How are McDonald’s store ratings and review counts distributed geographically? Are there specific regions where high or low ratings cluster?  
-2. What is the overall distribution of ratings across all McDonald’s stores? Are extreme ratings (1 or 5 stars) more common than moderate ratings (2, 3, or 4 stars)?  
-3. How do the geographical patterns of ratings relate to the overall distribution trends?
+1. How are McDonald’s store ratings and review counts distributed geographically?  
+2. Are extreme ratings (1 or 5 stars) more common than moderate ratings (2, 3, or 4 stars)?  
+3. How do geographical patterns relate to the overall rating distribution?
 
-### **2. How do aspects of your design support exploration of the essential question? Were there trade-offs you had to make so that certain features were more clearly visible?**
-- **Design Aspects Supporting Exploration:**
-  1. **Map Design:**
-     - Colors represent average ratings (from purple for low ratings to yellow for high ratings), making it easy to identify regions with high or low ratings.
-     - Point sizes reflect review counts, allowing users to identify stores with higher customer engagement or activity.
-     - The map provides a geographic context to the distribution of ratings and reviews, helping answer "where" specific patterns occur.
-  2. **Bar Chart Design:**
-     - The bar chart complements the map by summarizing the overall distribution of ratings, providing insights into the proportion of high and low ratings across all stores.
-     - The chart highlights that 1-star and 5-star ratings are more common, while moderate ratings (2, 3, or 4 stars) are less frequent. This aligns with the phenomenon of polarized customer reviews.
+---
 
+### **2. How do aspects of your design support exploration of the essential question?**
+- **Design Choices:**
+  - The **map** uses colors to represent average ratings and point sizes for review counts, helping visualize geographical trends.
+  - The **bar chart** summarizes the overall rating distribution, showing a higher frequency of 1-star and 5-star ratings.
 - **Trade-offs:**
-  1. **Map Clarity:**
-     - To avoid overcrowding, only two variables (rating and review count) were visualized, excluding other potential metrics like sentiment score or operational hours.
-     - State names were omitted from the map to maintain simplicity, which could make exact geographic localization slightly challenging for some users.
-  2. **Bar Chart Simplicity:**
-     - The bar chart does not differentiate ratings by geographic region, as the focus was on the overall trend. Adding regional differentiation might have made the chart more complex.
+  - The map focuses on ratings and review counts, omitting other metrics like sentiment score to keep it clear.
+  - The bar chart doesn’t differentiate regions, prioritizing a simple overview of rating distribution.
+
+---
 
 ### **3. What are your key findings? How do they relate to your prior understanding?**
 - **Key Findings:**
-  1. **Geographical Patterns:**
-     - High-rating stores (yellow) are clustered in certain regions, such as the southeastern and coastal areas, suggesting potential regional differences in customer satisfaction or store performance.
-     - Larger points (indicating higher review counts) are distributed across various regions, but they are not always associated with high ratings. For instance, some large points are purple, indicating low ratings despite high engagement.
-  2. **Overall Rating Distribution:**
-     - The bar chart reveals that extreme ratings (1-star and 5-star) are more frequent, while moderate ratings (2, 3, 4 stars) are comparatively rare. This suggests a polarized distribution, where customers are more likely to leave a very positive or very negative review.
-     - The high proportion of 5-star ratings aligns with the prior understanding that most customers are satisfied with McDonald’s services, but the significant presence of 1-star ratings indicates potential issues at certain locations.
-  3. **Combined Insights:**
-     - Combining the map and bar chart highlights how regional clusters of low ratings contribute to the overall distribution. For example, the map identifies specific areas where 1-star ratings are concentrated, complementing the bar chart's summary.
-
-- **Relation to Prior Understanding:**
-  These findings confirm prior assumptions that customer reviews tend to be polarized. However, the geographical aspect reveals nuances that were not initially anticipated, such as the regional clustering of high and low ratings.
-
-### **4. How did you create the visualizations? Were there any data preparation steps?**
-- **Data Preparation Steps:**
-  1. **Data Cleaning:**
-     - `rating` (e.g., "5 stars") was converted to a numeric format.
-     - Missing values in `longitude` and `latitude` were dropped to ensure accurate geospatial visualization.
-  2. **Feature Engineering:**
-     - Review counts were scaled to a range of 1 to 5 using the `rescale()` function to create proportional point sizes.
-     - The dataset was converted into an `sf` object using `st_as_sf()` for compatibility with geographic plotting.
-  3. **Visualization Creation:**
-     - **Map:**
-       - A U.S. map was created using `map_data("state")` as the base layer.
-       - Points were added to the map, with `avg_rating` mapped to color and scaled `rating_count` mapped to point size.
-     - **Bar Chart:**
-       - A simple bar chart was created to show the count of stores at each average rating level.
-     - **Combination:**
-       - The map and bar chart were combined using the `patchwork` package, with the map given more prominence (height 5 times that of the bar chart) to emphasize spatial patterns.
+  - High-rating stores (yellow) cluster in specific regions, while low ratings (purple) are dispersed, indicating regional performance differences.
+  - Extreme ratings (1 and 5 stars) dominate, while moderate ratings are rare, showing polarized customer feedback.
+  - Combining the map and bar chart highlights the interplay between regional patterns and overall trends.
+- **Relation to Prior Understanding:**  
+  These findings align with the expectation of polarized reviews but reveal new insights, like regional clustering of high ratings.
 
 ---
+
+### **4. How did you create the visualizations? Were there any data preparation steps?**
+1. **Data Preparation:**
+   - Converted ratings to numeric values and dropped missing geographic data.
+   - Scaled review counts for proportional visualization and created an `sf` object for mapping.
+2. **Visualization:**
+   - The **map** displays geographic trends using `ggplot2`, with `avg_rating` mapped to color and scaled `rating_count` to size.
+   - The **bar chart** summarizes rating frequencies.
+   - Both visualizations were combined using the `patchwork` package.
+
+---
+
+
 
 ```{r}
 # Data cleaning: remove non-alphanumeric characters and extra spaces
@@ -256,6 +246,7 @@ loading_plot <- ggplot(loading_matrix, aes(x = PC1, y = PC2, label = rownames(lo
 print(loading_plot)
 
 ```
+
 ---
 title: "PCA Analysis of McDonald's Reviews"
 output: html_document
@@ -264,95 +255,58 @@ output: html_document
 ## Discussion of Visualizations
 
 ### **1. What is the essential question that your visualization is supposed to inform?**
-1. **PCA Scores Plot:**  
-   What are the main patterns in the relationship between McDonald’s store ratings, sentiment scores, and review counts? Can we identify clusters or trends in the data?
-
-2. **PCA Loadings Plot:**  
-   How do the original variables (average rating, sentiment score, review count) contribute to the principal components? What are the dominant factors driving the variance in the dataset?
-
-3. **Variance Explanation Table:**  
-   How much of the total variance in the dataset is captured by the principal components? Is it sufficient to focus on the first two principal components for analysis?
+- **PCA Scores Plot:** What are the patterns in the relationship between ratings, sentiment scores, and review counts? Are there clusters or trends?  
+- **PCA Loadings Plot:** How do ratings, sentiment, and review counts contribute to the principal components?  
+- **Variance Table:** How much variance is captured by the principal components, and is focusing on the first two sufficient?
 
 ---
 
-### **2. How do aspects of your design support exploration of the essential question? Were there trade-offs you had to make so that certain features were more clearly visible?**
+### **2. How do aspects of your design support exploration of the essential question?**
 
-#### **PCA Scores Plot**
-- **Design Support:**
-  - **Color Encoding:**  
-    The `avg_rating` (average rating) is mapped to color using a viridis color scale, making high ratings (yellow) and low ratings (purple) visually distinct.
-  - **Principal Component Axes:**  
-    The x-axis (PC1) and y-axis (PC2) represent the first two principal components, which capture 78.79% of the variance, providing a reliable low-dimensional representation.
-  - **Transparency:**  
-    Transparency (`alpha=0.8`) was used to prevent overplotting, ensuring dense regions are still visible.
-- **Trade-offs:**
-  - The visualization only focuses on the first two principal components, potentially ignoring patterns in higher components.
-  - Review counts are not explicitly visualized; they are indirectly included in the principal components.
+- **PCA Scores Plot:**
+  - **Design:** Color encodes `avg_rating`, and PC1/PC2 axes show relationships across 78.79% of variance.
+  - **Trade-offs:** Higher components are ignored, and review counts are indirectly represented.
 
-#### **PCA Loadings Plot**
-- **Design Support:**
-  - **Variable Positions:**  
-    The positions of variables (e.g., `avg_rating`, `sentiment_score`) on the principal component axes indicate their contributions to PC1 and PC2.
-  - **Labels for Variables:**  
-    Variable names are added as labels for clear interpretation of each variable's role.
-- **Trade-offs:**
-  - Only the loadings for the first two components are displayed, excluding the contributions of variables to higher components.
+- **PCA Loadings Plot:**
+  - **Design:** Variable positions and labels show contributions to PC1/PC2.
+  - **Trade-offs:** Focuses only on the first two components, excluding others.
 
-#### **Variance Explanation Table**
-- **Design Support:**
-  - The table summarizes the variance captured by each principal component, clearly justifying the focus on PC1 and PC2.
-- **Trade-offs:**
-  - A graphical representation (e.g., a cumulative variance plot) is not included, which could provide a more intuitive view of variance trends.
+- **Variance Table:**
+  - **Design:** Summarizes explained variance to justify dimensionality reduction.
+  - **Trade-offs:** A cumulative variance plot could better visualize trends.
 
 ---
 
 ### **3. What are your key findings? How do they relate to your prior understanding?**
 
-1. **Findings from the PCA Scores Plot:**
-   - The first principal component (PC1) explains 46.78% of the variance and is strongly correlated with `avg_rating` (as confirmed by the PCA Loadings Plot).
-   - The second principal component (PC2) explains 32.01% of the variance and captures variability associated with `sentiment_score`.
-   - High-rating stores (yellow points) form distinct clusters, indicating consistent patterns across the variables.
-   - Low-rating stores (purple points) are more dispersed, suggesting greater variability in their characteristics.
+1. **PCA Scores Plot:**
+   - PC1 (46.78%) is strongly linked to `avg_rating`, while PC2 (32.01%) captures `sentiment_score`.
+   - High ratings cluster, while low ratings are more dispersed.
 
-2. **Findings from the PCA Loadings Plot:**
-   - `avg_rating` has a strong positive loading on PC1, indicating that this component primarily reflects rating trends.
-   - `sentiment_score` contributes significantly to PC2, highlighting its role in capturing variability beyond ratings.
-   - `rating_count` has a smaller influence on both components, suggesting it is less critical in driving the main patterns.
+2. **PCA Loadings Plot:**
+   - `avg_rating` heavily contributes to PC1; `sentiment_score` drives PC2.
+   - `rating_count` has minimal influence on both components.
 
-3. **Findings from the Variance Explanation Table:**
-   - The first two components capture 78.79% of the total variance, validating the decision to focus on these components for visualizations.
-   - The dataset is primarily driven by customer ratings and sentiment, while review counts play a less prominent role.
+3. **Variance Table:**
+   - The first two components explain 78.79% of the variance, validating the focus on them.
 
-4. **Relation to Prior Understanding:**
-   - These findings confirm the prior understanding that ratings and sentiment are key factors in customer feedback.
-   - PCA reveals additional insights, such as distinct patterns for high ratings and greater variability for low ratings, which align with expectations while adding nuance.
+**Relation to Prior Understanding:** These findings confirm that ratings and sentiment are dominant factors but reveal new nuances, such as variability in low ratings.
 
 ---
 
 ### **4. How did you create the visualizations? Were there any data preparation steps?**
 
-#### **Data Preparation:**
-1. **Text Cleaning and Sentiment Analysis:**
-   - Reviews were cleaned using regular expressions to remove non-alphanumeric characters and extra spaces.
-   - Sentiment scores were calculated using the Bing sentiment lexicon via the `tidytext` package.
-   - Reviews without matching sentiment words were assigned a sentiment score of 0.
+1. **Data Preparation:**
+   - Cleaned text reviews, calculated sentiment scores using the Bing lexicon, and replaced missing values with 0.
+   - Selected `avg_rating`, `rating_count`, and `sentiment_score` for PCA and standardized them using `scale()`.
 
-2. **Feature Selection and Standardization:**
-   - Selected `avg_rating` (average rating), `rating_count` (review count), and `sentiment_score` as input variables for PCA.
-   - Used the `scale()` function to standardize the data, ensuring all variables contributed equally to the PCA.
-
-#### **Visualization Creation:**
-1. **PCA Analysis:**
-   - Performed PCA using the `prcomp()` function on the standardized data.
-   - The variance explained by each principal component was summarized to justify focusing on PC1 and PC2.
-2. **PCA Scores Plot:**
-   - Created a scatter plot using `ggplot2`, with PC1 and PC2 on the x and y axes, respectively.
-   - Used color to encode `avg_rating`, highlighting patterns in the principal component space.
-3. **PCA Loadings Plot:**
-   - Extracted the loadings matrix and visualized it as a scatter plot, labeling variables to explain the principal components.
+2. **Visualization Creation:**
+   - **PCA Scores Plot:** Scatter plot of PC1 vs. PC2, colored by `avg_rating` using `ggplot2`.
+   - **PCA Loadings Plot:** Loadings matrix visualized with variable labels to explain PC contributions.
+   - **Variance Table:** Summarized the variance captured by components.
 
 ---
 
 ### **Summary**
-The PCA analysis effectively reveals relationships between McDonald’s store ratings, sentiment scores, and review counts. The PCA Scores Plot highlights clusters and trends, while the PCA Loadings Plot explains the roles of individual variables in shaping these patterns. Together, they provide a comprehensive view of the primary factors driving customer feedback. The variance explanation table supports the dimensionality reduction, ensuring meaningful insights with minimal information loss. This analysis confirms prior expectations about the importance of ratings and sentiment while uncovering nuanced patterns in the data.
+The PCA analysis uncovers relationships between ratings, sentiment, and review counts. PCA Scores Plot shows trends and clustering, while PCA Loadings Plot reveals variable contributions. Together, they effectively highlight the dataset's primary patterns, confirming that ratings and sentiment dominate customer feedback analysis.
 
