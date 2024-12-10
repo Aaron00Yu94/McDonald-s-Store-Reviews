@@ -1,5 +1,5 @@
 ---
-title: "Geospatial Analysis of McDonald's Ratings"
+title: "Mapping McDonald's Customer Satisfaction: Geospatial Insights into Ratings and Reviews"
 author: "Aaron Yu"
 output: html_document
 ---
@@ -111,10 +111,6 @@ combined_plot <- main_map / review_dist +
 combined_plot
 ```
 
----
-title: "McDonald's Ratings and Reviews Analysis"
-output: html_document
----
 
 ## Discussion of Visualizations
 
@@ -247,10 +243,6 @@ print(loading_plot)
 
 ```
 
----
-title: "PCA Analysis of McDonald's Reviews"
-output: html_document
----
 
 ## Discussion of Visualizations
 
